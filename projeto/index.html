@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategy Pattern - Comparação</title>
+
+    <!-- Mermaid -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f4f4;
+            margin: 30px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+        }
+
+        pre {
+            background: #1e1e1e;
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .code-box {
+            margin: 20px 0;
+        }
+
+        .highlight {
+            background: #eaf2f8;
+            padding: 10px;
+            border-left: 5px solid #3498db;
+        }
+
+        .diagram {
+            margin: 20px 0;
+            background: #fafafa;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .bad {
+            border-left: 5px solid red;
+        }
+
+        .good {
+            border-left: 5px solid green;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>Padrão Strategy</h1>
+
+<p>
+<p>O padrão Strategy sugere que você pegue uma classe que faz algo específico em diversas maneiras diferentes e extraia todos esses algoritmos para classes separadas chamadas estratégias.</p>
+<p>A classe original, chamada contexto, deve ter um campo para armazenar uma referência para um dessas estratégias. O contexto delega o trabalho para um objeto estratégia ao invés de executá-lo por conta própria.</p>
+<p>O contexto não é responsável por selecionar um algoritmo apropriado para o trabalho. Ao invés disso, o cliente passa a estratégia desejada para o contexto. Na verdade, o contexto não sabe muito sobre as estratégias. Ele trabalha com todas elas através de uma interface genérica, que somente expõe um único método para acionar o algoritmo encapsulado dentro da estratégia selecionada.</p>
+<p>Desta forma o contexto se torna independente das estratégias concretas, então você pode adicionar novos algoritmos ou modificar os existentes sem modificar o código do contexto ou outras estratégias.
+</p>
+</p>
+
+<div class="highlight">
+💡 Ideia principal: separar regras em classes diferentes.
+</div>
+
+<h2>📌 Enunciado do Problema</h2>
+
+<p>
+Uma aplicação precisa simular o deslocamento de um usuário até o aeroporto. 
+Esse deslocamento pode ser realizado utilizando diferentes meios de transporte, 
+como carro, ônibus ou bicicleta.
+</p>
+
+<p>
+Na implementação inicial, a escolha do meio de transporte é feita por meio de 
+estruturas condicionais (<b>if/else</b>), onde cada opção executa um comportamento específico.
+</p>
+
+<p>
+Entretanto, com o crescimento do sistema, novos meios de transporte podem ser adicionados, 
+como táxi, metrô ou aplicativo de carona, tornando o código cada vez mais complexo, 
+difícil de manter e pouco flexível.
+</p>
+
+<p>
+Diante desse cenário, surge a necessidade de aplicar um padrão de projeto que permita 
+encapsular esses diferentes comportamentos e possibilitar a troca dinâmica do algoritmo 
+de execução sem alterar a estrutura principal do sistema.
+</p>
+
+<p>
+Assim, o desafio consiste em refatorar a solução utilizando o padrão <b>Strategy</b>, 
+de forma a eliminar estruturas condicionais extensas e promover maior organização, 
+flexibilidade e facilidade de manutenção no código.
+</p>
+
+
+---
+
+<h2>❌ Código SEM Strategy</h2>
+
+<div class="code-box bad">
+<pre>
+class Transporte {
+
+    public void irParaAeroporto(String tipo) {
+
+        if (tipo.equals("carro")) {
+            System.out.println("Indo de carro");
+        } 
+        else if (tipo.equals("onibus")) {
+            System.out.println("Indo de ônibus");
+        } 
+        else if (tipo.equals("bicicleta")) {
+            System.out.println("Indo de bicicleta");
+        }
+    }
+}
+</pre>
+</div>
+
+<h3>Problemas:</h3>
+<ul>
+    <li>Muitos if/else</li>
+    <li>Difícil de manter</li>
+    <li>Não segue Open/Closed</li>
+</ul>
+
+---
+
+<h2>🛠️ Como implementar o Strategy</h2>
+
+<div class="highlight">
+Passo a passo para aplicar o padrão Strategy na prática:
+</div>
+
+<ol>
+
+<li>
+<b>1. Identifique o problema</b><br>
+Procure um algoritmo que muda com frequência ou um código cheio de <b>if/else</b>.
+</li>
+
+<pre>
+if (tipo.equals("carro")) { ... }
+else if (tipo.equals("onibus")) { ... }
+else if (tipo.equals("bicicleta")) { ... }
+</pre>
+
+<li>
+<b>2. Crie a interface Strategy</b><br>
+Defina um contrato comum para todos os comportamentos.
+</li>
+
+<pre>
+interface TransporteStrategy {
+    void ir();
+}
+</pre>
+
+<li>
+<b>3. Separe as implementações</b><br>
+Cada comportamento vira uma classe diferente.
+</li>
+
+<pre>
+class Carro implements TransporteStrategy {
+    public void ir() {
+        System.out.println("Indo de carro");
+    }
+}
+</pre>
+
+<li>
+<b>4. Crie o Contexto</b><br>
+O contexto usa a estratégia sem saber detalhes dela.
+</li>
+
+<pre>
+class Contexto {
+
+    private TransporteStrategy strategy;
+
+    public void setStrategy(TransporteStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public void executar() {
+        strategy.ir();
+    }
+}
+</pre>
+
+<li>
+<b>5. O cliente escolhe a estratégia</b><br>
+Quem usa o sistema decide qual comportamento usar.
+</li>
+
+<pre>
+public class Main {
+    public static void main(String[] args) {
+
+        Contexto contexto = new Contexto();
+
+        contexto.setStrategy(new Carro());
+        contexto.executar();
+
+        contexto.setStrategy(new Onibus());
+        contexto.executar();
+    }
+}
+</pre>
+
+</ol>
+
+<h2>✅ Código COM Strategy</h2>
+
+<h3>Interface</h3>
+
+<pre>
+interface TransporteStrategy {
+    void ir();
+}
+</pre>
+
+<h3>Implementações</h3>
+
+<pre>
+class Carro implements TransporteStrategy {
+    public void ir() {
+        System.out.println("Indo de carro");
+    }
+}
+
+class Onibus implements TransporteStrategy {
+    public void ir() {
+        System.out.println("Indo de ônibus");
+    }
+}
+
+class Bicicleta implements TransporteStrategy {
+    public void ir() {
+        System.out.println("Indo de bicicleta");
+    }
+}
+</pre>
+
+<h3>Contexto</h3>
+
+<pre>
+class Contexto {
+
+    private TransporteStrategy strategy;
+
+    public void setStrategy(TransporteStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public void executar() {
+        strategy.ir();
+    }
+}
+</pre>
+
+<h3>Main</h3>
+
+<pre>
+public class Main {
+    public static void main(String[] args) {
+
+        Contexto contexto = new Contexto();
+
+        contexto.setStrategy(new Carro());
+        contexto.executar();
+
+        contexto.setStrategy(new Onibus());
+        contexto.executar();
+    }
+}
+</pre>
+
+<h3>💡 O que está acontecendo aqui?</h3>
+
+<ul>
+    <li>O comportamento foi <b>extraído</b> da classe principal</li>
+    <li>Cada algoritmo virou uma <b>classe independente</b></li>
+    <li>O contexto apenas <b>delegada a execução</b></li>
+    <li>O sistema fica <b>aberto para extensão</b> e fechado para modificação</li>
+</ul>
+
+---
+
+<h2>⚖️ Comparação</h2>
+
+<div class="comparison">
+
+<div class="bad">
+<h3>❌ Sem Strategy</h3>
+<ul>
+    <li>if/else gigante</li>
+    <li>difícil de expandir</li>
+    <li>acoplado</li>
+    <li>código sujo</li>
+</ul>
+</div>
+
+<div class="good">
+<h3>✅ Com Strategy</h3>
+<ul>
+    <li>código limpo</li>
+    <li>fácil de adicionar novos comportamentos</li>
+    <li>baixo acoplamento</li>
+    <li>segue SOLID</li>
+</ul>
+</div>
+
+</div>
+
+---
+
+<h2>📊 Diagrama</h2>
+
+<div class="diagram">
+<pre class="mermaid">
+classDiagram
+
+class Context {
+    strategy
+    executar()
+}
+
+class Strategy {
+    executar()
+}
+
+class Carro {
+    executar()
+}
+
+class Onibus {
+    executar()
+}
+
+class Bicicleta {
+    executar()
+}
+
+Context --> Strategy
+Strategy <|-- Carro
+Strategy <|-- Onibus
+Strategy <|-- Bicicleta
+</pre>
+</div>
+
+
+<h2>🔄 Fluxo</h2>
+
+<div class="diagram">
+<pre class="mermaid">
+sequenceDiagram
+
+Cliente ->> Contexto: setStrategy()
+Cliente ->> Contexto: executar()
+Contexto ->> Strategy: ir()
+</pre>
+</div>
+
+---
+
+<h2>🏗️ Strategy na Arquitetura Hexagonal</h2>
+
+<p>
+Na Arquitetura Hexagonal (Ports and Adapters), o padrão <b>Strategy</b> se encaixa 
+principalmente dentro da <b>camada de domínio</b> ou <b>casos de uso</b>, dependendo da responsabilidade do comportamento.
+</p>
+
+<h3>📍 Localização ideal</h3>
+
+<ul>
+    <li><b>Interface Strategy:</b> fica no <b>Domínio</b> (regra de negócio)</li>
+    <li><b>Implementações:</b> podem ficar:
+        <ul>
+            <li>no <b>Domínio</b> (se forem regras puras)</li>
+            <li>ou em <b>Adaptadores</b> (se dependem de tecnologia externa)</li>
+        </ul>
+    </li>
+    <li><b>Contexto:</b> geralmente fica nos <b>Casos de Uso</b></li>
+</ul>
+
+<p>
+Isso garante que o domínio continue independente de frameworks, banco de dados ou detalhes externos.
+</p>
+
+<div class="diagram">
+<pre class="mermaid">
+flowchart LR
+
+Entrada --> Contexto
+Contexto --> Strategy
+
+Strategy --> Carro
+Strategy --> Onibus
+Strategy --> Bicicleta
+
+Carro --> Saida
+Onibus --> Saida
+Bicicleta --> Saida
+</pre>
+</div>
+
+<h3>💡 Por que funciona tão bem na Hexagonal?</h3>
+
+<p>
+A Arquitetura Hexagonal promove o desacoplamento entre o núcleo da aplicação 
+e o mundo externo. O padrão Strategy segue exatamente esse princípio, pois 
+também desacopla o comportamento de quem o utiliza.
+</p>
+
+<p>
+Enquanto a Hexagonal separa <b>"o que o sistema faz"</b> de <b>"como ele se conecta"</b>, 
+o Strategy separa <b>"o que deve ser feito"</b> de <b>"como é feito"</b>.
+</p>
+
+<h3>🏢 Arquitetura em Camadas</h3>
+
+<ul>
+    <li>Strategy pode ser usado, mas:</li>
+    <ul>
+        <li>fica preso na camada de serviço</li>
+        <li>tende a gerar acoplamento entre camadas</li>
+        <li>difícil separar regras de negócio puras</li>
+    </ul>
+</ul>
+
+<p>
+❌ Problema: a lógica ainda depende da estrutura da aplicação
+</p>
+
+<h3>🧼 Clean Architecture</h3>
+
+<ul>
+    <li>Strategy também se encaixa bem</li>
+    <li>fica nas <b>Use Cases</b> ou <b>Entities</b></li>
+    <li>segue inversão de dependência</li>
+</ul>
+
+<p>
+✅ Funciona muito bem, mas é mais abstrata e complexa de implementar
+</p>
+
+<h3>🔷 Arquitetura Hexagonal</h3>
+
+<ul>
+    <li>Strategy se encaixa naturalmente como comportamento plugável</li>
+    <li>combina perfeitamente com o conceito de <b>Ports</b></li>
+    <li>permite trocar implementações sem afetar o domínio</li>
+</ul>
+
+<p>
+✅ Melhor alinhamento conceitual e prático
+</p>
+
+<h3>🏆 Conclusão</h3>
+
+<p>
+O padrão Strategy se encaixa melhor na Arquitetura Hexagonal porque ambos 
+compartilham o mesmo princípio fundamental: <b>desacoplamento</b>.
+</p>
+
+<p>
+Na arquitetura em camadas, o Strategy tende a ficar limitado e acoplado à estrutura.
+Na Clean Architecture, ele se encaixa bem, mas com maior complexidade estrutural.
+</p>
+
+<p>
+Já na Arquitetura Hexagonal, o Strategy atua de forma natural como um componente 
+intercambiável dentro do domínio ou dos casos de uso, permitindo a substituição 
+de comportamentos sem impactar o núcleo da aplicação.
+</p>
+
+<p>
+Isso torna o sistema mais flexível, testável e preparado para mudanças, atendendo 
+perfeitamente aos princípios de design moderno como SOLID e baixo acoplamento.
+</p>
+
+
+
+</div>
+
+</body>
+</html>
